@@ -1,11 +1,11 @@
 services:
   db:
     image: postgres:15-alpine
-    container_name: event_planner_db
+    container_name: urban_events_db
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ue_db
+      POSTGRES_DB: uedb
     ports:
       - "5432:5432"
     volumes:
