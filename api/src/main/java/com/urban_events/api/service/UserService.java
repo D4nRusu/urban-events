@@ -8,6 +8,8 @@ import com.urban_events.api.model.UserRole;
 import com.urban_events.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
+import com.urban_events.api.dto.LoginRequest;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -28,5 +30,16 @@ public class UserService {
                 .build();
 
         return userRepository.save(user);
+    }
+
+    public User logInUser(LoginRequest request){
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        return user;
     }
 }
