@@ -6,11 +6,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.urban_events.api.service.JwtService;
-import com.urban_events.api.service.UserService;
-
 import jakarta.validation.Valid;
 
+import com.urban_events.api.service.JwtService;
+import com.urban_events.api.service.UserService;
 import com.urban_events.api.dto.AuthResponse;
 import com.urban_events.api.dto.LoginRequest;
 import com.urban_events.api.dto.RegisterRequest;

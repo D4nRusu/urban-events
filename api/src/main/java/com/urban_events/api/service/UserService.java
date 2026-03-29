@@ -5,6 +5,8 @@ import com.urban_events.api.dto.RegisterRequest;
 import com.urban_events.api.model.User;
 import com.urban_events.api.model.UserRole;
 import com.urban_events.api.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import com.urban_events.api.dto.LoginRequest;
@@ -41,5 +43,12 @@ public class UserService {
         }
 
         return user;
+    }
+
+    @Transactional
+    public void deleteUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User with email '" + email + "' not found."));
+        userRepository.delete(user);
     }
 }
