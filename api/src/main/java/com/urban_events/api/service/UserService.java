@@ -1,6 +1,5 @@
 package com.urban_events.api.service;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.urban_events.api.dto.RegisterRequest;
 import com.urban_events.api.model.User;
@@ -9,35 +8,36 @@ import com.urban_events.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import com.urban_events.api.dto.LoginRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public User registerUser(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already in use");
+            throw new RuntimeException("Email '" + request.getEmail() + "' is already in use.");
         }
 
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .userName(request.getUserName())
+                .fullName(request.getFullName()) 
                 .role(request.getRole() != null ? request.getRole() : UserRole.USER)
                 .build();
 
         return userRepository.save(user);
     }
 
-    public User logInUser(LoginRequest request){
+    public User loginUser(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new RuntimeException("Invalid email or password");
         }
 
         return user;

@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.urban_events.api.service.JwtService;
 import com.urban_events.api.service.UserService;
+
+import jakarta.validation.Valid;
+
 import com.urban_events.api.dto.AuthResponse;
 import com.urban_events.api.dto.LoginRequest;
 import com.urban_events.api.dto.RegisterRequest;
@@ -24,13 +27,13 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(userService.registerUser(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        User user = userService.logInUser(request);
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        User user = userService.loginUser(request);
         String token = jwtService.generateToken(user);
 
         return ResponseEntity.ok(AuthResponse.builder()
