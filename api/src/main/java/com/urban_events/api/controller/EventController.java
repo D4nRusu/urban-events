@@ -15,7 +15,6 @@ import jakarta.validation.Valid;
 
 import com.urban_events.api.dto.CreateEventRequest;
 import com.urban_events.api.dto.EventResponse;
-import com.urban_events.api.model.Event;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class EventController {
     private final EventService eventService;
 
     @GetMapping
-    public ResponseEntity<List<Event>> getAllEvents() {
+    public ResponseEntity<List<EventResponse>> getAllEvents() {
         return ResponseEntity.ok(eventService.getAllEvents());
     }
 

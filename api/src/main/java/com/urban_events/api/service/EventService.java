@@ -20,8 +20,22 @@ public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
 
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+    public List<EventResponse> getAllEvents() {
+        List<Event> events = eventRepository.findAllWithOrganizers();
+        return events.stream().map(event -> EventResponse.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .description(event.getDescription())
+                .eventDate(event.getEventDate())
+                .location(event.getLocation())
+                .imageUrl(event.getImageUrl())
+                .tags(event.getTags())
+                .organizer(UserResponse.builder()
+                        .id(event.getOrganizer().getId())
+                        .email(event.getOrganizer().getEmail())
+                        .fullName(event.getOrganizer().getFullName())
+                        .build())
+                .build()).toList();
     }
 
     public EventResponse createEvent(CreateEventRequest event, String organizerEmail) {
