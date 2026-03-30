@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,11 +31,13 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Title is required")
     private String title;
     
     @Column(length = 1000)
     private String description;
     
+    @NotNull(message = "Event date is required")
     private LocalDateTime eventDate;
     private String location; // venue, address, city, etc.
     private String imageUrl; // URL to event image
@@ -41,6 +45,7 @@ public class Event {
     @ElementCollection
     @CollectionTable(name = "event_tags", joinColumns = @JoinColumn(name = "event_id"))
     @Column(name = "tag")
+    @NotNull(message = "At least one tag is required")
     private Set<String> tags;
 
     @ManyToOne

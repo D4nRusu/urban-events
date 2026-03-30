@@ -3,6 +3,8 @@ package com.urban_events.api.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,6 +24,14 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
 
     @Bean
+    public RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.fromHierarchy("""
+            ROLE_ADMIN > ROLE_ORGANIZER
+            ROLE_ORGANIZER > ROLE_USER
+            """);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
@@ -32,8 +42,12 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll() // public
-                .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll() // public
                 .requestMatchers("/api/users/myaccount").authenticated() // needs auth
+
+                .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll() // public
+                .requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ORGANIZER") // organizer and above auth
+                .requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ORGANIZER")
+                .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasRole("ORGANIZER")
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider)
