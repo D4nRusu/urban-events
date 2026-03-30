@@ -13,6 +13,7 @@ import com.urban_events.api.service.UserService;
 import com.urban_events.api.dto.AuthResponse;
 import com.urban_events.api.dto.LoginRequest;
 import com.urban_events.api.dto.RegisterRequest;
+import com.urban_events.api.dto.UserResponse;
 import com.urban_events.api.model.User;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(userService.registerUser(request));
     }
 

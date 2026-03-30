@@ -14,6 +14,7 @@ import com.urban_events.api.service.EventService;
 import jakarta.validation.Valid;
 
 import com.urban_events.api.dto.CreateEventRequest;
+import com.urban_events.api.dto.EventResponse;
 import com.urban_events.api.model.Event;
 
 import java.util.List;
@@ -26,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class EventController {
     private final EventService eventService;
 
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<List<Event>> getAllEvents() {
         return ResponseEntity.ok(eventService.getAllEvents());
     }
@@ -37,8 +38,8 @@ public class EventController {
         return ResponseEntity.ok("This will return the event with ID: " + id);
     }
 
-    @PostMapping("")
-    public ResponseEntity<Event> createEvent(@Valid @RequestBody CreateEventRequest request, Authentication authentication) {
+    @PostMapping
+    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody CreateEventRequest request, Authentication authentication) {
         String email = authentication.getName();
         return ResponseEntity.ok(eventService.createEvent(request, email));
     }

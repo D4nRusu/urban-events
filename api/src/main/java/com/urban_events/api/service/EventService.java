@@ -7,6 +7,8 @@ import com.urban_events.api.repository.UserRepository;
 import com.urban_events.api.dto.CreateEventRequest;
 import com.urban_events.api.model.Event;
 import com.urban_events.api.model.User;
+import com.urban_events.api.dto.EventResponse;
+import com.urban_events.api.dto.UserResponse;
 
 import java.util.List;
 
@@ -22,7 +24,7 @@ public class EventService {
         return eventRepository.findAll();
     }
 
-    public Event createEvent(CreateEventRequest event, String organizerEmail) {
+    public EventResponse createEvent(CreateEventRequest event, String organizerEmail) {
         User organizer = userRepository.findByEmail(organizerEmail)
                 .orElseThrow(() -> new RuntimeException("Organizer with email '" + organizerEmail + "' not found."));
 
@@ -35,7 +37,21 @@ public class EventService {
                 .tags(event.getTags())
                 .organizer(organizer)
                 .build();
-                
-        return eventRepository.save(newEvent);
+
+        Event savedEvent = eventRepository.save(newEvent);
+        return EventResponse.builder()
+                .id(savedEvent.getId())
+                .title(savedEvent.getTitle())
+                .description(savedEvent.getDescription())
+                .eventDate(savedEvent.getEventDate())
+                .location(savedEvent.getLocation())
+                .imageUrl(savedEvent.getImageUrl())
+                .tags(savedEvent.getTags())
+                .organizer(UserResponse.builder()
+                        .id(organizer.getId())
+                        .email(organizer.getEmail())
+                        .fullName(organizer.getFullName())
+                        .build())
+                .build();
     }
 }
