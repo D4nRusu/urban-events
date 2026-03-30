@@ -4,6 +4,8 @@ import org.springframework.stereotype.Service;
 
 import com.urban_events.api.repository.EventRepository;
 import com.urban_events.api.repository.UserRepository;
+
+import com.urban_events.api.exceptions.ResourceNotFoundException;
 import com.urban_events.api.dto.CreateEventRequest;
 import com.urban_events.api.model.Event;
 import com.urban_events.api.model.User;
@@ -20,9 +22,8 @@ public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
 
-    public List<EventResponse> getAllEvents() {
-        List<Event> events = eventRepository.findAllWithOrganizers();
-        return events.stream().map(event -> EventResponse.builder()
+    private EventResponse mapToResponse(Event event) {
+        return EventResponse.builder()
                 .id(event.getId())
                 .title(event.getTitle())
                 .description(event.getDescription())
@@ -32,15 +33,26 @@ public class EventService {
                 .tags(event.getTags())
                 .organizer(UserResponse.builder()
                         .id(event.getOrganizer().getId())
-                        .email(event.getOrganizer().getEmail())
                         .fullName(event.getOrganizer().getFullName())
+                        .email(event.getOrganizer().getEmail())
                         .build())
-                .build()).toList();
+                .build();
+    }
+
+    public List<EventResponse> getAllEvents() {
+        List<Event> events = eventRepository.findAllWithOrganizers();
+        return events.stream().map(this::mapToResponse).toList();
+    }
+
+    public EventResponse getEventById(Long id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Event with ID '" + id + "' not found."));
+        return mapToResponse(event);
     }
 
     public EventResponse createEvent(CreateEventRequest event, String organizerEmail) {
         User organizer = userRepository.findByEmail(organizerEmail)
-                .orElseThrow(() -> new RuntimeException("Organizer with email '" + organizerEmail + "' not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Organizer with email '" + organizerEmail + "' not found."));
 
         Event newEvent = Event.builder()
                 .title(event.getTitle())
@@ -53,19 +65,6 @@ public class EventService {
                 .build();
 
         Event savedEvent = eventRepository.save(newEvent);
-        return EventResponse.builder()
-                .id(savedEvent.getId())
-                .title(savedEvent.getTitle())
-                .description(savedEvent.getDescription())
-                .eventDate(savedEvent.getEventDate())
-                .location(savedEvent.getLocation())
-                .imageUrl(savedEvent.getImageUrl())
-                .tags(savedEvent.getTags())
-                .organizer(UserResponse.builder()
-                        .id(organizer.getId())
-                        .email(organizer.getEmail())
-                        .fullName(organizer.getFullName())
-                        .build())
-                .build();
+        return mapToResponse(savedEvent);
     }
 }

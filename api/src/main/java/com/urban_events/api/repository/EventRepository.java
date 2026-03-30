@@ -12,7 +12,10 @@ import org.springframework.data.jpa.repository.Query;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
+
+    @EntityGraph(attributePaths = {"organizer", "tags"})
     Optional<Event> findById(Long id);
+    
     Optional<Event> findByTitle(String title);
 
     @EntityGraph(attributePaths = {"organizer", "tags"})
