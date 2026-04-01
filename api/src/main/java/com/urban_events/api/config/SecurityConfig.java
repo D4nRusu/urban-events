@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ORGANIZER") // organizer and above auth
                 .requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ORGANIZER")
                 .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasRole("ORGANIZER")
+                .requestMatchers("/api/bookings/**").hasRole("USER") // user and above auth
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider)
