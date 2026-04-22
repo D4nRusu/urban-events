@@ -1,6 +1,7 @@
 package com.urban_events.api.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,36 +24,26 @@ public class BookingService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void bookEvent(Long eventId, String userEmail) {
+    public String bookEvent(Long eventId, String userEmail) { // also unbooks if booked
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
-        // check if booked already
-        if (bookingRepository.findByUserAndEvent(user, event).isPresent()) {
-            throw new IllegalStateException("You are already attending this event");
+        Optional<Booking> existing = bookingRepository.findByUserAndEvent(user, event);
+    
+        if (existing.isPresent()) {
+                bookingRepository.delete(existing.get());
+                return "unbooked";
+        } else {
+                // create booking
+                Booking booking = new Booking();
+                booking.setUser(user);
+                booking.setEvent(event);
+                booking.setBookingDate(LocalDateTime.now());
+                bookingRepository.save(booking);
+                return "booked";
         }
-
-        // create booking
-        Booking booking = new Booking();
-        booking.setUser(user);
-        booking.setEvent(event);
-        booking.setBookingDate(LocalDateTime.now());
-
-        bookingRepository.save(booking);
     }
-
-    @Transactional
-    public void cancelBooking(Long eventId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
-        Booking booking = bookingRepository.findByUserAndEvent(user, event)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found")); 
-        bookingRepository.delete(booking);
-    }
-
 }
