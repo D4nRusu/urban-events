@@ -25,7 +25,7 @@ export default function Dashboard() {
 
             api.get('/events/my-events')
                 .then(res => {
-                    console.log("Fetched events:", res.data); 
+                    console.log("Fetched events:", res.data);
                     setMyEvents(res.data);
                 })
                 .catch(err => {
@@ -47,6 +47,10 @@ export default function Dashboard() {
         }
     };
 
+    const handleRowClick = (id) => {
+        navigate(`/event/${id}`);
+    };
+
     return (
         <main className="p-8 max-w-6xl mx-auto">
             <div className="flex justify-between items-end mb-12">
@@ -63,18 +67,51 @@ export default function Dashboard() {
                 {myEvents.length === 0 && <p className="text-gray-600 py-20 text-center border-2 border-dashed border-white/5 rounded-3xl">No events hosted yet.</p>}
 
                 {myEvents.map(event => (
-                    <div key={event.id} className="bg-[#1a1a1a] border border-white/5 p-6 rounded-2xl flex items-center justify-between group hover:border-purple-500/50 transition">
+                    <div
+                        key={event.id}
+                        onClick={() => handleRowClick(event.id)}
+                        className="cursor-pointer bg-[#1a1a1a] border border-white/5 p-6 rounded-2xl flex items-center justify-between group hover:border-purple-500/50 transition transform active:scale-[0.99]"
+                    >
                         <div className="flex items-center gap-6">
-                            <img src={event.imageUrl || 'placeholder'} className="w-16 h-16 rounded-lg object-cover grayscale group-hover:grayscale-0 transition" />
-                            <div>
-                                <h3 className="text-xl font-bold">{event.title}</h3>
-                                <p className="text-gray-500 text-sm">{new Date(event.eventDate).toLocaleDateString()}</p>
+                            <img
+                                src={event.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png'}
+                                className="w-16 h-16 rounded-lg object-cover grayscale group-hover:grayscale-0 transition"
+                            />
+
+                            {/* The Fix: Force left alignment and column stacking */}
+                            <div className="flex flex-col items-start justify-start text-left">
+                                <h3 className="text-xl font-bold leading-none mb-1">
+                                    {event.title}
+                                </h3>
+                                <p className="text-gray-500 text-sm font-mono uppercase tracking-widest leading-none">
+                                    {new Date(event.eventDate).toLocaleDateString(undefined, {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    })}
+                                </p>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            <Link to={`/event/${event.id}`} className="p-3 hover:bg-white/5 rounded-xl text-gray-400 hover:text-white transition"><ExternalLink size={20} /></Link>
-                            <button onClick={() => handleDelete(event.id)} className="p-3 hover:bg-red-500/10 rounded-xl text-gray-400 hover:text-red-500 transition"><Trash2 size={20} /></button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/edit-event/${event.id}`); // Use navigate for edit
+                                }}
+                                className="p-3 hover:bg-purple-500/10 rounded-xl text-gray-400 hover:text-purple-400 transition"
+                            >
+                                <Edit3 size={20} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(event.id);
+                                }}
+                                className="p-3 hover:bg-red-500/10 rounded-xl text-gray-400 hover:text-red-500 transition"
+                            >
+                                <Trash2 size={20} />
+                            </button>
                         </div>
                     </div>
                 ))}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { Calendar } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -54,6 +55,10 @@ export default function Home() {
     }
   };
 
+  const handleCardClick = (id) => {
+    navigate(`/event/${id}`);
+  };
+
   return (
     <main className="p-8">
       <h1 className="text-4xl font-bold mb-8 uppercase tracking-widest text-white">Upcoming Events</h1>
@@ -69,20 +74,24 @@ export default function Home() {
                 {event.tags && event.tags.length > 0 ? event.tags[0] : 'Event'}
               </span>
               <h2 className="text-xl font-bold mt-1 text-white group-hover:text-purple-400 transition">{event.title}</h2>
-              <p className="text-gray-400 text-sm mt-2 line-clamp-2">{event.description}</p>
+              <p className="text-gray-400 text-sm mt-2 p-4 line-clamp-2">{event.description}</p>
+              <p className="text-purple-500 text-xs mt-2 flex items-center justify-center gap-2 w-full border-t border-white/5 pt-4">
+                <Calendar size={12} className="text-purple-500" /> {/* Assuming you use Lucide-react */}
+                {event.eventDate ? new Date(event.eventDate).toLocaleDateString() : 'Date TBA'}
+              </p>
 
               <div className="flex flex-col gap-2 mt-6">
                 <button
                   onClick={() => handleAttend(event.id)}
-                  className={`w-full py-3 rounded-xl font-bold transition-all duration-200 ${event.isAttending
-                      ? "bg-gray-800 text-gray-400 border border-gray-700 hover:border-red-500 hover:text-red-500"
-                      : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-lg"
+                  className={`cursor-pointer w-full py-3 rounded-xl font-bold transition-all duration-200 ${event.isAttending
+                    ? "bg-gray-800 text-gray-400 border border-gray-700 hover:border-red-500 hover:text-red-500"
+                    : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-lg"
                     }`}
                 >
                   {event.isAttending ? "✓ Attending" : "Attend Event"}
                 </button>
                 <Link to={`/event/${event.id}`}>
-                  <button className="mt-4 w-full py-2 bg-gray-800 rounded-lg font-semibold hover:bg-white hover:text-black transition">
+                  <button className="cursor-pointer mt-4 w-full py-2 bg-gray-800 rounded-lg font-semibold hover:bg-white hover:text-black transition">
                     View Details
                   </button>
                 </Link>

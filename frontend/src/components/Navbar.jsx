@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode'; // Import the decoder
 export default function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
-  
+
   let userRole = null;
 
   if (token) {
@@ -33,7 +33,7 @@ export default function Navbar() {
 
       <div className="flex items-center gap-8">
         <Link to="/" className="text-gray-400 hover:text-white font-medium transition">Explore</Link>
-        
+
         {token ? (
           <>
             {/* Logic: If role is ORGANIZER, show Dashboard */}
@@ -43,8 +43,11 @@ export default function Navbar() {
                 Dashboard
               </Link>
             )}
-            
-            <button onClick={handleLogout} className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition">
+            {
+              <Link to="/profile" className="text-gray-400 hover:text-white font-medium transition">My Profile</Link>
+            }
+
+            <button onClick={handleLogout} className="cursor-pointer flex items-center gap-2 text-gray-500 hover:text-red-500 transition">
               <LogOut size={18} /> Logout
             </button>
           </>

@@ -22,7 +22,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
 
-    private EventResponse mapToResponse(Event event) {
+    public static EventResponse mapToResponse(Event event) {
         return EventResponse.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -41,7 +41,7 @@ public class EventService {
 
     public List<EventResponse> getAllEvents() {
         List<Event> events = eventRepository.findAllWithOrganizers();
-        return events.stream().map(this::mapToResponse).toList();
+        return events.stream().map(EventService::mapToResponse).toList();
     }
 
     public EventResponse getEventById(Long id) {
@@ -81,6 +81,21 @@ public class EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("Organizer with email '" + organizerEmail + "' not found."));
 
         List<Event> events = eventRepository.findByOrganizer(organizer);
-        return events.stream().map(this::mapToResponse).toList();
+        return events.stream().map(EventService::mapToResponse).toList();
+    }
+
+    public EventResponse updateEvent(Long id, CreateEventRequest request) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Event with ID '" + id + "' not found."));
+
+        event.setTitle(request.getTitle());
+        event.setDescription(request.getDescription());
+        event.setEventDate(request.getEventDate());
+        event.setLocation(request.getLocation());
+        event.setImageUrl(request.getImageUrl());
+        event.setTags(request.getTags());
+
+        Event updatedEvent = eventRepository.save(event);
+        return mapToResponse(updatedEvent);
     }
 }

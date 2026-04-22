@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.urban_events.api.dto.BookingResponse;
 import com.urban_events.api.exceptions.ResourceNotFoundException;
 import com.urban_events.api.model.Booking;
 import com.urban_events.api.model.Event;
@@ -23,6 +24,13 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+
+    public BookingResponse convertToResponse(com.urban_events.api.model.Booking booking) {
+        return BookingResponse.builder()
+                .event(EventService.mapToResponse(booking.getEvent())) // using static method from EventService
+                .bookingDate(booking.getBookingDate())
+                .build();
+    }
 
     @Transactional
     public String bookEvent(Long eventId, String userEmail) { // also unbooks if booked

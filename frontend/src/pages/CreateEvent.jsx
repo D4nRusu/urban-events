@@ -51,7 +51,7 @@ export default function CreateEvent() {
                 <textarea
                     placeholder="Description" rows="4"
                     className="bg-black border border-white/10 p-4 rounded-xl focus:border-purple-500 outline-none"
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    onChange={e => setFormData({ ...formData, description: e.target.value ? e.target.value : '' })}
                 />
 
                 <div className="grid grid-cols-2 gap-4">

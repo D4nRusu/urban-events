@@ -37,6 +37,7 @@ public class UserService {
                 .id(savedUser.getId())
                 .email(savedUser.getEmail())
                 .fullName(savedUser.getFullName())
+                .role(savedUser.getRole().name())
                 .build();
     }
 
@@ -56,5 +57,23 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User with email '" + email + "' not found."));
         userRepository.delete(user);
+    }
+
+    public String getFullNameByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User with email '" + email + "' not found."));
+        return user.getFullName();
+    }
+
+    public UserResponse getMyAccountDetails(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole().name())
+                .build();
     }
 }

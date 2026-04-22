@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import EventDetails from './pages/EventDetails';
 import Dashboard from './pages/Dashboard';
 import CreateEvent from './pages/CreateEvent';
+import EditEvent from './pages/EditEvent';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="/event/:id" element={<EventDetails />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-event" element={<CreateEvent />} />
+          <Route path="/edit-event/:id" element={<EditEvent />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
     </Router>

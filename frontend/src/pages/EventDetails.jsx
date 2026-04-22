@@ -106,7 +106,7 @@ export default function EventDetails() {
 
                     <button
                         onClick={handleToggleAttend}
-                        className={`w-full py-5 rounded-2xl font-black text-xl tracking-tighter transition-all duration-300 transform active:scale-95 shadow-2xl ${isAttending
+                        className={`cursor-pointer w-full py-5 rounded-2xl font-black text-xl tracking-tighter transition-all duration-300 transform active:scale-95 shadow-2xl ${isAttending
                             ? "bg-emerald-500/10 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white"
                             : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-purple-500/20"
                             }`}
