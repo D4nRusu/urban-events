@@ -42,6 +42,10 @@ public class BookingService {
 
         Optional<Booking> existing = bookingRepository.findByUserAndEvent(user, event);
 
+        if (event.getEventDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Cannot book a past event.");
+        }
+
         if (existing.isPresent()) {
             bookingRepository.delete(existing.get());
             return "unbooked";

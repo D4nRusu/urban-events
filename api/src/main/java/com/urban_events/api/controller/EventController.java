@@ -33,6 +33,25 @@ public class EventController {
         return ResponseEntity.ok(eventService.getAllEvents());
     }
 
+    @GetMapping("/upcoming")
+    public ResponseEntity<List<EventResponse>> getUpcomingEvents() {
+        return ResponseEntity.ok(eventService.getUpcomingEvents());
+    }
+
+    @GetMapping("/past")
+    public ResponseEntity<List<EventResponse>> getPastEvents() {
+        return ResponseEntity.ok(eventService.getPastEvents());
+    }
+
+    @GetMapping("/my-events")
+    public ResponseEntity<List<EventResponse>> getMyEvents(Authentication auth) {
+        String email = auth.getName();
+
+        List<EventResponse> myEvents = eventService.getEventsByOrganizer(email);
+
+        return ResponseEntity.ok(myEvents);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getEventById(@PathVariable Long id) {
         return ResponseEntity.ok(eventService.getEventById(id));
@@ -55,17 +74,9 @@ public class EventController {
         return eventService.deleteEvent(id);
     }
 
-    @GetMapping("/my-events")
-    public ResponseEntity<List<EventResponse>> getMyEvents(Authentication auth) {
-        String email = auth.getName();
-
-        List<EventResponse> myEvents = eventService.getEventsByOrganizer(email);
-
-        return ResponseEntity.ok(myEvents);
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<EventResponse> updateEvent(@PathVariable Long id, @Valid @RequestBody CreateEventRequest request) {
         return ResponseEntity.ok(eventService.updateEvent(id, request));
     }
+
 }

@@ -1,105 +1,174 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { Calendar } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Calendar, Clock, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
-  const [events, setEvents] = useState([]);
+  const [upcoming, setUpcoming] = useState([]);
+  const [past, setPast] = useState([]);
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const eventsRes = await api.get('/events');
-        let fetchedEvents = eventsRes.data;
+        // Parallel fetch for speed
+        const [upRes, pastRes] = await Promise.all([
+          api.get('/events/upcoming'),
+          api.get('/events/past')
+        ]);
 
+        let upcomingData = upRes.data;
+        let pastData = pastRes.data;
+
+        // If logged in, check which ones we are attending
         if (token) {
           const bookingsRes = await api.get('/bookings/mine');
           const myBookedIds = bookingsRes.data;
 
-          fetchedEvents = fetchedEvents.map(event => ({
+          const markAttending = (list) => list.map(event => ({
             ...event,
             isAttending: myBookedIds.includes(event.id)
           }));
+
+          upcomingData = markAttending(upcomingData);
+          pastData = markAttending(pastData);
         }
 
-        setEvents(fetchedEvents);
+        setUpcoming(upcomingData);
+        setPast(pastData);
       } catch (err) {
         console.error("Data fetch failed", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadData();
   }, [token]);
 
+  // Helper to identify events happening today
+  const isToday = (dateString) => {
+    const eventDate = new Date(dateString);
+    const today = new Date();
+    return eventDate.toDateString() === today.toDateString();
+  };
+
   const handleAttend = async (eventId) => {
-    const token = localStorage.getItem('token');
     if (!token) { navigate('/login'); return; }
-
     try {
-      const response = await api.post(`/bookings/event/${eventId}`);
-      setEvents(prevEvents => prevEvents.map(event => {
-        if (event.id === eventId) {
-          return { ...event, isAttending: !event.isAttending };
-        }
-        return event;
-      }));
-
+      await api.post(`/bookings/event/${eventId}`);
+      const updateList = (list) => list.map(e => e.id === eventId ? { ...e, isAttending: !e.isAttending } : e);
+      setUpcoming(updateList(upcoming));
+      setPast(updateList(past));
     } catch (err) {
-      const errorMsg = typeof err.response?.data === 'string'
-        ? err.response.data
-        : err.response?.data?.message || "Error";
-      alert(errorMsg);
+      alert(err.response?.data?.message || "Action failed");
     }
   };
 
-  const handleCardClick = (id) => {
-    navigate(`/event/${id}`);
-  };
+  if (loading) return <div className="p-20 text-center text-gray-500 animate-pulse uppercase tracking-widest font-black">Loading Feed...</div>;
+
+  const todayEvents = upcoming.filter(e => isToday(e.eventDate));
+  const trulyUpcoming = upcoming.filter(e => !isToday(e.eventDate));
 
   return (
-    <main className="p-8">
-      <h1 className="text-4xl font-bold mb-8 uppercase tracking-widest text-white">Upcoming Events</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {events.map(event => (
-          <div key={event.id} className="bg-[#1a1a1a] rounded-xl overflow-hidden border border-gray-800 hover:border-purple-500 transition group shadow-lg">
-            <div className="h-48 bg-gray-900">
-              <img src={event.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?_=20200912122019'} alt={event.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
-            </div>
-
-            <div className="p-5">
-              <span className="text-purple-400 text-xs font-bold uppercase tracking-tighter">
-                {event.tags && event.tags.length > 0 ? event.tags[0] : 'Event'}
-              </span>
-              <h2 className="text-xl font-bold mt-1 text-white group-hover:text-purple-400 transition">{event.title}</h2>
-              <p className="text-gray-400 text-sm mt-2 p-4 line-clamp-2">{event.description}</p>
-              <p className="text-purple-500 text-xs mt-2 flex items-center justify-center gap-2 w-full border-t border-white/5 pt-4">
-                <Calendar size={12} className="text-purple-500" /> {/* Assuming you use Lucide-react */}
-                {event.eventDate ? new Date(event.eventDate).toLocaleDateString() : 'Date TBA'}
-              </p>
-
-              <div className="flex flex-col gap-2 mt-6">
-                <button
-                  onClick={() => handleAttend(event.id)}
-                  className={`cursor-pointer w-full py-3 rounded-xl font-bold transition-all duration-200 ${event.isAttending
-                    ? "bg-gray-800 text-gray-400 border border-gray-700 hover:border-red-500 hover:text-red-500"
-                    : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-lg"
-                    }`}
-                >
-                  {event.isAttending ? "✓ Attending" : "Attend Event"}
-                </button>
-                <Link to={`/event/${event.id}`}>
-                  <button className="cursor-pointer mt-4 w-full py-2 bg-gray-800 rounded-lg font-semibold hover:bg-white hover:text-black transition">
-                    View Details
-                  </button>
-                </Link>
-              </div>
-            </div>
+    <main className="p-8 max-w-7xl mx-auto space-y-24">
+      
+      {todayEvents.length > 0 && (
+        <section>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-3 h-3 bg-red-500 rounded-full animate-ping" />
+            <h2 className="text-4xl font-black uppercase tracking-tighter text-white">Happening <span className="text-red-500">Today</span></h2>
           </div>
-        ))}
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {todayEvents.map(event => (
+              <EventCard key={event.id} event={event} handleAttend={handleAttend} variant="today" />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section>
+        <h2 className="text-4xl font-black mb-8 uppercase tracking-tighter text-white">Upcoming <span className="text-purple-500">Events</span></h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {trulyUpcoming.map(event => (
+            <EventCard key={event.id} event={event} handleAttend={handleAttend} variant="upcoming" />
+          ))}
+        </div>
+      </section>
+
+      {past.length > 0 && (
+        <section className="pb-20">
+          <h2 className="text-2xl font-black mb-8 uppercase tracking-widest text-gray-600">Past Archives</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {past.map(event => (
+              <EventCard key={event.id} event={event} handleAttend={handleAttend} variant="past" />
+            ))}
+          </div>
+        </section>
+      )}
     </main>
+  );
+}
+
+function EventCard({ event, handleAttend, variant }) {
+  const isPast = variant === 'past';
+  const isToday = variant === 'today';
+
+  return (
+    <div className={`relative bg-[#1a1a1a] rounded-2xl overflow-hidden border transition-all duration-300 group shadow-2xl ${
+      isToday ? 'border-red-500/30' : isPast ? 'border-white/5 opacity-60 grayscale' : 'border-white/5 hover:border-purple-500'
+    }`}>
+      
+      {/* Image Header */}
+      <div className="h-48 overflow-hidden relative">
+        <img 
+          src={event.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png'} 
+          className="w-full h-full object-cover transition duration-700 group-hover:scale-110" 
+        />
+        {isToday && (
+          <div className="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter animate-pulse">
+            Live Now
+          </div>
+        )}
+      </div>
+
+      <div className="p-6">
+        <span className={`text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-red-500' : 'text-purple-500'}`}>
+          {event.tags?.[0] || 'Urban'}
+        </span>
+        
+        <h3 className="text-xl font-bold text-white mt-1 group-hover:text-purple-400 transition">{event.title}</h3>
+        <p className="text-gray-500 text-sm mt-2 line-clamp-2 leading-relaxed">{event.description}</p>
+
+        {/* Info Row */}
+        <div className={`flex items-center gap-4 mt-6 pt-6 border-t border-white/5 text-[11px] font-mono uppercase tracking-widest ${isToday ? 'text-red-400' : 'text-gray-400'}`}>
+          <span className="flex items-center gap-1.5"><Calendar size={13}/> {new Date(event.eventDate).toLocaleDateString()}</span>
+          <span className="flex items-center gap-1.5"><Clock size={13}/> {new Date(event.eventDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+
+        {(
+          <div className="mt-6 flex flex-col gap-2">
+            <button
+              onClick={() => handleAttend(event.id)}
+              className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
+                event.isAttending 
+                ? 'bg-transparent border border-white/10 text-gray-500 hover:border-red-500 hover:text-red-500' 
+                : 'bg-white text-black hover:bg-purple-600 hover:text-white'
+              }`}
+            >
+              {event.isAttending ? '✓ Booked' : 'Attend'}
+            </button>
+            <Link 
+              to={`/event/${event.id}`} 
+              className="flex items-center justify-center gap-2 py-2 text-xs font-bold text-gray-500 hover:text-white transition"
+            >
+              View Details <ArrowRight size={14}/>
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

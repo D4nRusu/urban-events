@@ -10,6 +10,7 @@ export default function EventDetails() {
     const [loading, setLoading] = useState(true);
     const [isAttending, setIsAttending] = useState(false);
     const token = localStorage.getItem('token');
+    const isPast = event?.eventDate ? new Date(event.eventDate) < new Date() : false;
 
     useEffect(() => {
         const loadEventData = async () => {
@@ -105,14 +106,23 @@ export default function EventDetails() {
                     </p>
 
                     <button
-                        onClick={handleToggleAttend}
-                        className={`cursor-pointer w-full py-5 rounded-2xl font-black text-xl tracking-tighter transition-all duration-300 transform active:scale-95 shadow-2xl ${isAttending
-                            ? "bg-emerald-500/10 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white"
-                            : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-purple-500/20"
+                        onClick={!isPast ? handleToggleAttend : null} // Disable click logic if past
+                        disabled={isPast} // Standard HTML disabled attribute
+                        className={`w-full py-5 rounded-2xl font-black text-xl tracking-tighter transition-all duration-300 transform shadow-2xl ${isPast
+                                ? "bg-gray-800 text-gray-500 border border-white/5 cursor-not-allowed opacity-50" // Expired style
+                                : isAttending
+                                    ? "bg-emerald-500/10 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white cursor-pointer active:scale-95"
+                                    : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-purple-500/20 cursor-pointer active:scale-95"
                             }`}
                     >
-                        {isAttending ? "✓ YOU ARE ON THE LIST" : "ATTEND THIS EVENT"}
+                        {isPast ? "EVENT HAS ENDED" : isAttending ? "✓ YOU ARE ON THE LIST" : "ATTEND THIS EVENT"}
                     </button>
+
+                    {isPast && (
+                        <p className="text-center mt-4 p-4 text-gray-500 text-sm font-bold uppercase tracking-widest">
+                            Registration for this experience is closed.
+                        </p>
+                    )}
 
                     {isAttending && (
                         <p className="text-center mt-4 p-3 text-emerald-500 text-sm font-bold animate-pulse">

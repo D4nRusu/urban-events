@@ -13,16 +13,22 @@ import org.springframework.data.jpa.repository.Query;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
 
-    @EntityGraph(attributePaths = {"organizer", "tags"})
+    @EntityGraph(attributePaths = { "organizer", "tags" })
     Optional<Event> findById(Long id);
-    
+
     Optional<Event> findByTitle(String title);
 
-    @EntityGraph(attributePaths = {"organizer", "tags"})
+    @EntityGraph(attributePaths = { "organizer", "tags" })
     @Query("SELECT e FROM Event e JOIN FETCH e.organizer")
     List<Event> findAllWithOrganizers();
 
     List<Event> findByOrganizer(com.urban_events.api.model.User organizer);
-    
+
     List<Event> findByOrganizerEmail(String email);
+
+    @Query("SELECT e FROM Event e WHERE e.eventDate >= CURRENT_TIMESTAMP ORDER BY e.eventDate ASC")
+    List<Event> findUpcomingEvents();
+
+    @Query("SELECT e FROM Event e WHERE e.eventDate < CURRENT_TIMESTAMP ORDER BY e.eventDate DESC")
+    List<Event> findPastEvents();
 }

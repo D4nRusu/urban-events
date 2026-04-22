@@ -98,4 +98,14 @@ public class EventService {
         Event updatedEvent = eventRepository.save(event);
         return mapToResponse(updatedEvent);
     }
+
+    public List<EventResponse> getUpcomingEvents() {
+        List<Event> events = eventRepository.findUpcomingEvents();
+        return events.stream().map(EventService::mapToResponse).toList();
+    }
+
+    public List<EventResponse> getPastEvents() {
+        List<Event> events = eventRepository.findPastEvents();
+        return events.stream().map(EventService::mapToResponse).toList();
+    }
 }
