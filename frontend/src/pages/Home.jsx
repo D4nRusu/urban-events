@@ -1,16 +1,37 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function Home() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
-    api.get('/events')
-      .then(res => setEvents(res.data))
-      .catch(err => console.error("Failed to fetch events", err));
-  }, []);
+    const loadData = async () => {
+      try {
+        const eventsRes = await api.get('/events');
+        let fetchedEvents = eventsRes.data;
+
+        if (token) {
+          const bookingsRes = await api.get('/bookings/mine');
+          const myBookedIds = bookingsRes.data;
+
+          fetchedEvents = fetchedEvents.map(event => ({
+            ...event,
+            isAttending: myBookedIds.includes(event.id)
+          }));
+        }
+
+        setEvents(fetchedEvents);
+      } catch (err) {
+        console.error("Data fetch failed", err);
+      }
+    };
+
+    loadData();
+  }, [token]);
 
   const handleAttend = async (eventId) => {
     const token = localStorage.getItem('token');
@@ -40,7 +61,7 @@ export default function Home() {
         {events.map(event => (
           <div key={event.id} className="bg-[#1a1a1a] rounded-xl overflow-hidden border border-gray-800 hover:border-purple-500 transition group shadow-lg">
             <div className="h-48 bg-gray-900">
-              <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
+              <img src={event.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?_=20200912122019'} alt={event.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
             </div>
 
             <div className="p-5">
@@ -53,13 +74,18 @@ export default function Home() {
               <div className="flex flex-col gap-2 mt-6">
                 <button
                   onClick={() => handleAttend(event.id)}
-                  className="w-full py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-500 transition transform active:scale-95"
+                  className={`w-full py-3 rounded-xl font-bold transition-all duration-200 ${event.isAttending
+                      ? "bg-gray-800 text-gray-400 border border-gray-700 hover:border-red-500 hover:text-red-500"
+                      : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-lg"
+                    }`}
                 >
-                  {event.isAttending ? 'Unattend Event' : 'Attend Event'}
+                  {event.isAttending ? "✓ Attending" : "Attend Event"}
                 </button>
-                <button className="w-full py-2 bg-transparent border border-gray-700 text-gray-300 rounded-lg font-semibold hover:bg-white hover:text-black transition">
-                  View Details
-                </button>
+                <Link to={`/event/${event.id}`}>
+                  <button className="mt-4 w-full py-2 bg-gray-800 rounded-lg font-semibold hover:bg-white hover:text-black transition">
+                    View Details
+                  </button>
+                </Link>
               </div>
             </div>
           </div>

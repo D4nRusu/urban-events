@@ -1,5 +1,6 @@
 package com.urban_events.api.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,5 @@ import com.urban_events.api.model.User;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     Optional<Booking> findByUserAndEvent(User user, Event event);
     long countByEventId(Long eventId);
+    Optional<List<Booking>> findByUser(User user);
 }
