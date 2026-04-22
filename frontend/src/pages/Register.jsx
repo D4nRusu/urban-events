@@ -34,7 +34,7 @@ export default function Register() {
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
       <div className="w-full max-w-md bg-[#1a1a1a] border border-white/10 p-10 rounded-2xl shadow-2xl">
         <h2 className="text-3xl font-black tracking-tighter mb-2 text-white">CREATE ACCOUNT</h2>
-        <p className="text-gray-400 mb-8 text-sm">Join the urban community today.</p>
+        <p className="text-gray-400 mb-8 p-4 text-sm">Join the urban community today.</p>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Full Name Input */}

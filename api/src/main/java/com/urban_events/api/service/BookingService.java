@@ -49,7 +49,6 @@ public class BookingService {
     }
 
     public List<Booking> findAllByUser(User user) {
-        return bookingRepository.findByUser(user)
-                .orElseThrow(() -> new ResourceNotFoundException("No bookings found for user"));
+        return bookingRepository.findByUser(user);
     }
 }

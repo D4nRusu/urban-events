@@ -2,6 +2,7 @@ package com.urban_events.api.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +38,8 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody CreateEventRequest request, Authentication authentication) {
+    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody CreateEventRequest request,
+            Authentication authentication) {
         String email = authentication.getName();
         return ResponseEntity.ok(eventService.createEvent(request, email));
     }
@@ -45,5 +47,19 @@ public class EventController {
     @PostMapping("/update/{id}")
     public String updateEvent(@PathVariable Long id) {
         return "This will update the event with ID: " + id;
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteEvent(@PathVariable Long id) {
+        return eventService.deleteEvent(id);
+    }
+
+    @GetMapping("/my-events")
+    public ResponseEntity<List<EventResponse>> getMyEvents(Authentication auth) {
+        String email = auth.getName();
+
+        List<EventResponse> myEvents = eventService.getEventsByOrganizer(email);
+
+        return ResponseEntity.ok(myEvents);
     }
 }

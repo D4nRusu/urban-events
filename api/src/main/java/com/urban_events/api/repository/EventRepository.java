@@ -21,4 +21,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @EntityGraph(attributePaths = {"organizer", "tags"})
     @Query("SELECT e FROM Event e JOIN FETCH e.organizer")
     List<Event> findAllWithOrganizers();
+
+    List<Event> findByOrganizer(com.urban_events.api.model.User organizer);
+    
+    List<Event> findByOrganizerEmail(String email);
 }

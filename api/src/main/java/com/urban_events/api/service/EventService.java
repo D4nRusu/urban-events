@@ -67,4 +67,20 @@ public class EventService {
         Event savedEvent = eventRepository.save(newEvent);
         return mapToResponse(savedEvent);
     }
+
+    public String deleteEvent(Long id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Event with ID '" + id + "' not found."));
+
+        eventRepository.delete(event);
+        return "Event with ID '" + id + "' has been deleted.";
+    }
+
+    public List<EventResponse> getEventsByOrganizer(String organizerEmail) {
+        User organizer = userRepository.findByEmail(organizerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Organizer with email '" + organizerEmail + "' not found."));
+
+        List<Event> events = eventRepository.findByOrganizer(organizer);
+        return events.stream().map(this::mapToResponse).toList();
+    }
 }

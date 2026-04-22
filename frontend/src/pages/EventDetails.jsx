@@ -8,38 +8,51 @@ export default function EventDetails() {
     const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isAttending, setIsAttending] = useState(false);
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
-        api.get(`/events/${id}`)
-            .then(res => {
+        const loadEventData = async () => {
+            try {
+                // 1. Fetch Event Details
+                const res = await api.get(`/events/${id}`);
                 setEvent(res.data);
+
+                // 2. Sync Booking State if logged in
+                if (token) {
+                    const bookingsRes = await api.get('/bookings/mine');
+                    const myBookedIds = bookingsRes.data;
+                    setIsAttending(myBookedIds.includes(parseInt(id)));
+                }
                 setLoading(false);
-            })
-            .catch(() => navigate('/')); // Redirect home if event doesn't exist
-    }, [id, navigate]);
+            } catch (err) {
+                navigate('/');
+            }
+        };
+        loadEventData();
+    }, [id, token, navigate]);
 
-    if (loading) return <div className="p-20 text-center animate-pulse text-gray-500">Loading event...</div>;
-
-    const handleAttend = async (eventId) => {
-        const token = localStorage.getItem('token');
-        if (!token) { navigate('/login'); return; }
+    const handleToggleAttend = async () => {
+        if (!token) {
+            navigate('/login', { state: { from: `/event/${id}` } });
+            return;
+        }
 
         try {
-            const response = await api.post(`/bookings/event/${eventId}`);
-            setEvents(prevEvents => prevEvents.map(event => {
-                if (event.id === eventId) {
-                    return { ...event, isAttending: !event.isAttending };
-                }
-                return event;
-            }));
-
+            await api.post(`/bookings/event/${id}`);
+            setIsAttending(!isAttending); // Flip the state locally
         } catch (err) {
-            const errorMsg = typeof err.response?.data === 'string'
-                ? err.response.data
-                : err.response?.data?.message || "Error";
-            alert(errorMsg);
+            console.error("Toggle failed", err);
         }
     };
+
+    if (loading || !event) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-dark">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-purple-500"></div>
+            </div>
+        );
+    }
 
     return (
         <main className="max-w-5xl mx-auto p-6 md:p-12">
@@ -54,9 +67,9 @@ export default function EventDetails() {
                 {/* Left Side: Image */}
                 <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl h-[400px]">
                     <img
-                        src={event.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?_=20200912122019'}
+                        src={event?.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png'}
                         className="w-full h-full object-cover"
-                        alt={event.title}
+                        alt={event?.title || 'Event image'}
                     />
                 </div>
 
@@ -75,7 +88,7 @@ export default function EventDetails() {
                     <div className="space-y-4 mb-8 text-gray-300">
                         <div className="flex items-center gap-3">
                             <Calendar className="text-purple-500" size={20} />
-                            <span className="font-medium">{new Date(event.dateTime).toLocaleString()}</span>
+                            <span className="font-medium">{new Date(event.eventDate).toLocaleString()}</span>
                         </div>
                         <div className="flex items-center gap-3">
                             <MapPin className="text-purple-500" size={20} />
@@ -83,23 +96,29 @@ export default function EventDetails() {
                         </div>
                         <div className="flex items-center gap-3">
                             <User className="text-purple-500" size={20} />
-                            <span className="font-medium">Hosted by Organizer #{event.organizerId}</span>
+                            <span className="font-medium">Hosted by - {event.organizer.fullName}</span>
                         </div>
                     </div>
 
-                    <p className="text-gray-400 leading-relaxed text-lg mb-8">
+                    <p className="text-gray-400 leading-relaxed text-lg p-4 mb-8">
                         {event.description}
                     </p>
 
                     <button
-                        onClick={() => handleAttend(event.id)}
-                        className={`w-full py-3 rounded-xl font-bold transition-all duration-200 ${event.isAttending
-                            ? "bg-gray-800 text-gray-400 border border-gray-700 hover:border-red-500 hover:text-red-500"
-                            : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-lg"
+                        onClick={handleToggleAttend}
+                        className={`w-full py-5 rounded-2xl font-black text-xl tracking-tighter transition-all duration-300 transform active:scale-95 shadow-2xl ${isAttending
+                            ? "bg-emerald-500/10 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white"
+                            : "bg-white text-black hover:bg-purple-600 hover:text-white shadow-purple-500/20"
                             }`}
                     >
-                        {event.isAttending ? "✓ Attending" : "Attend Event"}
+                        {isAttending ? "✓ YOU ARE ON THE LIST" : "ATTEND THIS EVENT"}
                     </button>
+
+                    {isAttending && (
+                        <p className="text-center mt-4 p-3 text-emerald-500 text-sm font-bold animate-pulse">
+                            You're all set! See you at the event.
+                        </p>
+                    )}
                 </div>
             </div>
         </main>
