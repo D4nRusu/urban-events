@@ -16,4 +16,7 @@ public class EventResponse {
     private String imageUrl;
     private Set<String> tags;
     private UserResponse organizer; // contains only relevant info
+
+    @Builder.Default
+    private long bookingCount = 0; // for quick access
 }

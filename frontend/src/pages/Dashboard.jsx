@@ -3,10 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { Plus, Trash2, Edit3, ExternalLink } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
+import { Users, X, Mail } from 'lucide-react';
+import AttendeesModal from './AtendeesModal';
 
 export default function Dashboard() {
     const [myEvents, setMyEvents] = useState([]);
     const navigate = useNavigate();
+    const [selectedEventId, setSelectedEventId] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -77,8 +80,6 @@ export default function Dashboard() {
                                 src={event.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png'}
                                 className="w-16 h-16 rounded-lg object-cover grayscale group-hover:grayscale-0 transition"
                             />
-
-                            {/* The Fix: Force left alignment and column stacking */}
                             <div className="flex flex-col items-start justify-start text-left">
                                 <h3 className="text-xl font-bold leading-none mb-1">
                                     {event.title}
@@ -112,10 +113,38 @@ export default function Dashboard() {
                             >
                                 <Trash2 size={20} />
                             </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedEventId(event.id);
+                                }}
+                                className="p-3 hover:bg-emerald-500/10 rounded-xl text-gray-400 hover:text-emerald-500 transition"
+                            >
+                                <Users size={20} />
+                            </button>
+                        </div>
+                        <div className="flex flex-col">
+                            <h3 className="text-xl font-bold leading-none mb-1">{event.title}</h3>
+                            <div className="flex items-center gap-3 mt-1">
+                                <p className="text-gray-500 text-sm font-mono uppercase tracking-widest leading-none">
+                                    {new Date(event.eventDate).toLocaleDateString()}
+                                </p>
+                                <span className="h-1 w-1 bg-gray-700 rounded-full"></span>
+                                <p className="text-purple-400 text-xs font-black uppercase tracking-tighter">
+                                    {event.bookingCount || 0} Attendees
+                                </p>
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
+            {selectedEventId && (
+                <AttendeesModal
+                    eventId={selectedEventId}
+                    onClose={() => setSelectedEventId(null)}
+                />
+            )}
         </main>
     );
 }
+

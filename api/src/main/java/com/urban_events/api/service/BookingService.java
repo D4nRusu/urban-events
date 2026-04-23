@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.urban_events.api.dto.BookingResponse;
+import com.urban_events.api.dto.UserResponse;
 import com.urban_events.api.exceptions.ResourceNotFoundException;
 import com.urban_events.api.model.Booking;
 import com.urban_events.api.model.Event;
@@ -62,5 +63,20 @@ public class BookingService {
 
     public List<Booking> findAllByUser(User user) {
         return bookingRepository.findByUser(user);
+    }
+
+    public List<UserResponse> getAttendeesByEventId(Long eventId) {
+        List<Booking> bookings = bookingRepository.findByEventIdWithUser(eventId);
+
+        return bookings.stream()
+                .map(booking -> {
+                    User user = booking.getUser();
+                    return UserResponse.builder()
+                            .id(user.getId())
+                            .fullName(user.getFullName())
+                            .email(user.getEmail())
+                            .build();
+                })
+                .toList();
     }
 }

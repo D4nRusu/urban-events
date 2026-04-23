@@ -64,14 +64,9 @@ public class EventController {
         return ResponseEntity.ok(eventService.createEvent(request, email));
     }
 
-    @PostMapping("/update/{id}")
-    public String updateEvent(@PathVariable Long id) {
-        return "This will update the event with ID: " + id;
-    }
-
     @DeleteMapping("/{id}")
-    public String deleteEvent(@PathVariable Long id) {
-        return eventService.deleteEvent(id);
+    public ResponseEntity<String> deleteEvent(@PathVariable Long id) {
+        return ResponseEntity.ok(eventService.deleteEvent(id));
     }
 
     @PutMapping("/{id}")

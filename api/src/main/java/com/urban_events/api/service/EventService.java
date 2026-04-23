@@ -2,6 +2,7 @@ package com.urban_events.api.service;
 
 import org.springframework.stereotype.Service;
 
+import com.urban_events.api.repository.BookingRepository;
 import com.urban_events.api.repository.EventRepository;
 import com.urban_events.api.repository.UserRepository;
 
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     public static EventResponse mapToResponse(Event event) {
         return EventResponse.builder()
@@ -52,7 +54,8 @@ public class EventService {
 
     public EventResponse createEvent(CreateEventRequest event, String organizerEmail) {
         User organizer = userRepository.findByEmail(organizerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizer with email '" + organizerEmail + "' not found."));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Organizer with email '" + organizerEmail + "' not found."));
 
         Event newEvent = Event.builder()
                 .title(event.getTitle())
@@ -78,10 +81,17 @@ public class EventService {
 
     public List<EventResponse> getEventsByOrganizer(String organizerEmail) {
         User organizer = userRepository.findByEmail(organizerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Organizer with email '" + organizerEmail + "' not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Organizer not found."));
 
         List<Event> events = eventRepository.findByOrganizer(organizer);
-        return events.stream().map(EventService::mapToResponse).toList();
+
+        return events.stream().map(event -> {
+            EventResponse response = EventService.mapToResponse(event);
+            long count = bookingRepository.countByEventId(event.getId());
+            response.setBookingCount(count);
+
+            return response;
+        }).toList();
     }
 
     public EventResponse updateEvent(Long id, CreateEventRequest request) {

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.urban_events.api.dto.BookingResponse;
+import com.urban_events.api.dto.UserResponse;
 import com.urban_events.api.model.User;
 import com.urban_events.api.service.BookingService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,11 @@ public class BookingController {
     @PostMapping("/event/{eventId}")
     public ResponseEntity<String> attend(@PathVariable Long eventId, Authentication auth) {
         return ResponseEntity.ok(bookingService.bookEvent(eventId, auth.getName()));
+    }
+
+    @GetMapping("/event/{eventId}/attendees")
+    public ResponseEntity<List<UserResponse>> getAttendees(@PathVariable Long eventId) {
+        return ResponseEntity.ok(bookingService.getAttendeesByEventId(eventId));
     }
 
     @GetMapping("/my-bookings")
