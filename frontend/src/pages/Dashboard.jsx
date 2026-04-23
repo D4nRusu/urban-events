@@ -59,7 +59,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-end mb-12">
                 <div>
                     <h1 className="text-5xl font-black tracking-tighter uppercase">Dashboard</h1>
-                    <p className="text-gray-500 mt-2">Manage your hosted urban experiences.</p>
+                    <p className="text-gray-500 mt-2">Manage your hosted urban events.</p>
                 </div>
                 <Link to="/create-event" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-xl font-bold transition">
                     <Plus size={20} /> Create New Event

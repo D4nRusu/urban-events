@@ -46,7 +46,7 @@ export default function Profile() {
 
       {/* Bookings Section */}
       <section>
-        <h2 className="text-2xl font-black mb-6 uppercase tracking-tight">Your Urban Experiences</h2>
+        <h2 className="text-2xl font-black mb-6 uppercase tracking-tight">Attended events:</h2>
         <div className="grid gap-4">
           {bookings.length === 0 ? (
             <div className="py-20 text-center border-2 border-dashed border-white/5 rounded-3xl text-gray-600">
