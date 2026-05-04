@@ -47,18 +47,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
             try {
                 if (jwtService.isTokenValid(jwt, userDetails)) {
+
+                    String role = jwtService.extractRole(jwt);
+                    var authorities = java.util.List
+                            .of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role));
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
-                            userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            authorities); // Use the prefixed authorities here
 
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (ExpiredJwtException e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Token expired. Please log in again.");
-                return; 
+                return;
             }
         }
         filterChain.doFilter(request, response);

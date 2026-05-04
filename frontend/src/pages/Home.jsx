@@ -48,7 +48,6 @@ export default function Home() {
     loadData();
   }, [token]);
 
-  // Helper to identify events happening today
   const isToday = (dateString) => {
     const eventDate = new Date(dateString);
     const today = new Date();

@@ -118,4 +118,15 @@ public class EventService {
         List<Event> events = eventRepository.findPastEvents();
         return events.stream().map(EventService::mapToResponse).toList();
     }
+
+    public List<EventResponse> getAllEventsForAdmin() {
+        List<Event> events = eventRepository.findAllWithOrganizers();
+        return events.stream().map(event -> {
+            EventResponse response = EventService.mapToResponse(event);
+            long count = bookingRepository.countByEventId(event.getId());
+            response.setBookingCount(count);
+
+            return response;
+        }).toList();
+    }
 }

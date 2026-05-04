@@ -31,43 +31,47 @@ public class SecurityConfig {
     @Bean
     public RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.fromHierarchy("""
-            ROLE_ADMIN > ROLE_ORGANIZER
-            ROLE_ORGANIZER > ROLE_USER
-            """);
+                ROLE_ADMIN > ROLE_ORGANIZER
+                ROLE_ORGANIZER > ROLE_USER
+                """);
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .exceptionHandling(exception -> exception
-            .authenticationEntryPoint((request, response, authException) -> {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-            })
-            )
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // public
-                .requestMatchers("/api/users/myaccount").authenticated() // needs auth
+                .csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                        }))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll() // public
-                .requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ORGANIZER") // organizer and above auth
-                .requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ORGANIZER")
-                .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasRole("ORGANIZER")
-                .requestMatchers("/api/bookings/**").hasRole("USER") // user and above auth
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                        // 1. Specific Admin endpoints MUST come before general ones
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // 2. Events logic
+                        .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
+                        .requestMatchers("/api/events/**").hasRole("ORGANIZER")
+
+                        // 3. Bookings
+                        .requestMatchers("/api/bookings/event/*/attendees").hasRole("ORGANIZER")
+                        .requestMatchers("/api/bookings/**").authenticated() // Changed from .hasRole("USER")
+
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();
     }
-    
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

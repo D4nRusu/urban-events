@@ -1,20 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Calendar, LayoutDashboard, LogOut } from 'lucide-react';
-import { jwtDecode } from 'jwt-decode'; // Import the decoder
+import { Calendar, LayoutDashboard, LogOut, ShieldCheck, User } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
-
   let userRole = null;
 
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      // Adjust 'role' based on your JWT claim name (check your Backend JWT provider)
-      userRole = decoded.role || decoded.authorities || null;
+      userRole = decoded.role;
     } catch (err) {
-      console.error("Invalid token");
       localStorage.removeItem('token');
     }
   }
@@ -31,23 +28,32 @@ export default function Navbar() {
         URBAN_EVENTS
       </Link>
 
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-6">
         <Link to="/" className="text-gray-400 hover:text-white font-medium transition">Explore</Link>
 
         {token ? (
           <>
-            {/* Logic: If role is ORGANIZER, show Dashboard */}
+            {/* ADMIN LINK */}
+            {userRole === 'ADMIN' && (
+              <Link to="/admin" className="flex items-center gap-2 text-red-500 hover:text-red-400 font-bold transition">
+                <ShieldCheck size={18} />
+                Admin Panel
+              </Link>
+            )}
+
+            {/* ORGANIZER LINK */}
             {userRole === 'ORGANIZER' && (
               <Link to="/dashboard" className="flex items-center gap-2 text-purple-400 hover:text-purple-300 font-bold transition">
                 <LayoutDashboard size={18} />
                 Dashboard
               </Link>
             )}
-            {
-              <Link to="/profile" className="text-gray-400 hover:text-white font-medium transition">My Profile</Link>
-            }
 
-            <button onClick={handleLogout} className="cursor-pointer flex items-center gap-2 text-gray-500 hover:text-red-500 transition">
+            <Link to="/profile" className="flex items-center gap-2 text-gray-400 hover:text-white font-medium transition">
+              <User size={18} /> Profile
+            </Link>
+
+            <button onClick={handleLogout} className="cursor-pointer flex items-center gap-2 text-gray-500 hover:text-red-500 transition ml-4">
               <LogOut size={18} /> Logout
             </button>
           </>
