@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { Calendar, MapPin, User, ArrowLeft } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export default function EventDetails() {
     const { id } = useParams();
@@ -101,10 +102,22 @@ export default function EventDetails() {
                         </div>
                     </div>
 
-                    <p className="text-gray-400 leading-relaxed text-lg p-4 mb-8">
-                        {event.description}
-                    </p>
-
+                  <div className="prose prose-invert max-w-none text-gray-400 leading-relaxed text-lg mb-8">
+                        <ReactMarkdown 
+                            components={{
+                                // This styles # Headlines
+                                h1: ({node, ...props}) => <h1 className="text-3xl font-black text-white mt-6 mb-4 uppercase tracking-tighter" {...props} />,
+                                // This styles ## Headlines
+                                h2: ({node, ...props}) => <h2 className="text-xl font-bold text-purple-400 mt-4 mb-2 uppercase" {...props} />,
+                                // This styles regular paragraphs
+                                p: ({node, ...props}) => <p className="mb-4" {...props} />,
+                                // This styles lists
+                                ul: ({node, ...props}) => <ul className="list-disc ml-4 mb-4" {...props} />,
+                            }}
+                        >
+                            {event.description}
+                        </ReactMarkdown>
+                    </div>
                     <button
                         onClick={!isPast ? handleToggleAttend : null} // Disable click logic if past
                         disabled={isPast} // Standard HTML disabled attribute

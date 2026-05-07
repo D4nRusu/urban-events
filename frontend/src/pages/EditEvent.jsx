@@ -66,10 +66,11 @@ export default function EditEvent() {
           />
         </div>
         
-        <textarea 
-          placeholder="Description" rows="4" value={formData.description}
-          className="bg-black border border-white/10 p-4 rounded-xl focus:border-purple-500 outline-none text-white"
-          onChange={e => setFormData({...formData, description: e.target.value})}
+        <textarea
+          placeholder="# Big Title&#10;## Smaller Title&#10;Regular text here..." 
+          rows="6"
+          className="bg-black border border-white/10 p-4 rounded-xl focus:border-purple-500 outline-none font-mono text-sm"
+          onChange={e => setFormData({ ...formData, description: e.target.value })}
         />
 
         <div className="grid grid-cols-2 gap-4">

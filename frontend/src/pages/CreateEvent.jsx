@@ -48,10 +48,16 @@ export default function CreateEvent() {
                     onChange={e => setFormData({ ...formData, title: e.target.value })}
                 />
 
+                <div className="flex justify-between items-end mb-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Description</label>
+                    <span className="text-[10px] text-purple-400 font-mono">Use # for H1, ## for H2, **bold**</span>
+                </div>
+
                 <textarea
-                    placeholder="Description" rows="4"
-                    className="bg-black border border-white/10 p-4 rounded-xl focus:border-purple-500 outline-none"
-                    onChange={e => setFormData({ ...formData, description: e.target.value ? e.target.value : '' })}
+                    placeholder="# Big Title&#10;## Smaller Title&#10;Regular text here..." 
+                    rows="6"
+                    className="bg-black border border-white/10 p-4 rounded-xl focus:border-purple-500 outline-none font-mono text-sm"
+                    onChange={e => setFormData({ ...formData, description: e.target.value })}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
